@@ -1,0 +1,706 @@
+VoiceScribe
+AI-Powered Audio & Video Transcription Platform
+Complete Project Blueprint  |  Version 1.0  |  June 2026
+
+
+Documents Included
+01  Product Requirements Document (PRD)
+02  Technical Requirements Document (TRD)
+03  Application Flow
+04  UI/UX Design Brief
+05  Database Schema & Data Flow
+06  Implementation Plan + Final Analysis
+ 
+01  Product Requirements Document (PRD)
+1.1 Product Overview
+VoiceScribe is a personal-use, web-based AI transcription platform designed for up to 20 trusted users. It processes audio and video content into structured, editable, and exportable transcripts, and applies AI post-processing to generate summaries, key insights, action items, chapters, blog posts, and social media content.
+The platform supports direct file uploads (MP3, WAV, MP4, MOV etc.) and URL-based extraction (YouTube, direct media URLs), with the architecture designed to extend to Instagram, TikTok, and Facebook when platform regulations allow.
+1.2 Problem Statement
+Content creators, consultants, researchers, and educators regularly work with spoken-word media and need to convert it into actionable written content. Existing transcription tools are expensive, limited in exports, or locked into proprietary ecosystems. VoiceScribe solves this with a self-hostable, near-zero-cost, AI-powered workspace.
+1.3 Target Audience
+User Type	Primary Use Case
+Content Creator	Transcribe videos, generate blog posts and social content
+Consultant	Convert meeting recordings into notes and action items
+Researcher	Transcribe interviews, extract key quotes
+Educator	Process lectures into study notes
+Developer	Automate transcription workflows
+Designer	Convert client briefs and feedback calls
+
+Expected Users: 10 minimum, 20 maximum. Monthly Volume: Under 100 hours of media.
+1.4 User Personas
+Ada — Content Creator
+•	Uploads YouTube video URLs and podcast MP3s
+•	Needs summaries, blog posts, LinkedIn posts quickly
+•	Prefers dark mode, keyboard shortcuts, clean UI
+Emeka — Consultant
+•	Records client meetings, uploads MP4 files
+•	Needs action items, meeting notes, DOCX exports
+•	Values reliability and searchable transcript history
+Zara — Researcher
+•	Uploads interview audio (WAV, M4A)
+•	Needs key quotes, searchable text, SRT for subtitles
+•	Requires language detection and PDF exports
+1.5 Goals & Objectives
+Primary Goals
+1.	Provide fast, accurate transcription using Whisper AI
+2.	Apply AI post-processing to extract actionable content
+3.	Allow full content repurposing from a single transcript
+4.	Keep operational costs under $0/month for the whole team
+Measurable Objectives
+•	Transcription accuracy: >90% on clear English audio
+•	Processing time: <2x media duration
+•	Zero paid APIs for core transcription functionality
+•	All 5 export formats (TXT, PDF, DOCX, SRT, VTT) available
+•	Architecture extensible for Instagram, TikTok, Facebook
+1.6 Core Features
+Feature	Description	Priority
+Authentication	Google OAuth + email/password via Supabase	MVP
+File Upload	Audio & video files up to 500MB	MVP
+URL Transcription	YouTube + direct media URLs via yt-dlp	MVP
+Transcript Editor	Inline editing with autosave + version history	MVP
+AI Summaries	Short / Detailed / Executive summaries	MVP
+Key Insights	Important quotes, main ideas extraction	MVP
+Action Items	Tasks, responsibilities, deadlines from audio	MVP
+Chapter Generation	Timestamped topic sections	MVP
+Content Repurposing	Blog, LinkedIn, Twitter, Instagram, Notes	MVP
+Export	TXT, PDF, DOCX, SRT, VTT	MVP
+Search	Full-text across all transcripts and summaries	MVP
+Dark/Light Mode	Toggle with preference saved per user	MVP
+Instagram/TikTok/FB	URL extraction when platform allows	Future
+Speaker Diarisation	Identify who is speaking	Future
+Real-time Transcription	Live microphone transcription	Future
+
+1.7 User Stories
+#	As a...	I want to...	So that...
+1	Logged-in user	Upload an MP3 file	I get a transcript quickly
+2	Logged-in user	Paste a YouTube URL	I don't download the file myself
+3	Logged-in user	Edit my transcript	I can fix transcription errors
+4	Logged-in user	Export as DOCX	I can share with clients
+5	Logged-in user	Generate a blog post	I can repurpose my content
+6	Logged-in user	Extract action items	I don't miss tasks from meetings
+7	Logged-in user	Search all transcripts	I can find a specific quote
+8	Logged-in user	See processing status	I know when my transcript is ready
+9	Admin user	Manage users	I control who has access
+10	Logged-in user	Toggle dark/light mode	I can work comfortably
+
+1.8 Success Metrics
+Metric	Target
+Transcription WER (English, clear audio)	< 10%
+Time to transcript per minute of audio	< 2 minutes processing
+Export success rate	100% for all formats
+Monthly infrastructure cost	< $10 total
+Uptime	> 99% (Vercel + Supabase SLAs)
+
+1.9 Risks
+Risk	Likelihood	Mitigation
+Whisper compute bottleneck	Medium	Async queue; retry on failure
+yt-dlp breaks on platform changes	High	Version-pin; abstracted extractor layer
+Vercel 10s function timeout	High	Background jobs + webhook pattern
+Free tier storage limits	Low	Delete media after processing
+Social platform API changes	High	Pluggable extractor module per platform
+
+1.10 Future Opportunities
+•	Instagram / TikTok / Facebook URL support (when yt-dlp or platform allows)
+•	Speaker diarisation — identify who is speaking
+•	Real-time transcription via microphone input
+•	Zapier / Make webhook integrations
+•	Notion / Google Docs direct export
+•	Mobile app via React Native
+ 
+02  Technical Requirements Document (TRD)
+2.1 System Architecture Overview
+VoiceScribe uses a hybrid architecture separating concerns across four layers: the Next.js frontend/API on Vercel, the Supabase managed backend (database, auth, storage), a self-hosted Python microservice for transcription, and the Claude API for AI post-processing.
+Architecture Diagram (Text)
+[Browser]
+    |
+[Next.js on Vercel]  ←→  [Supabase: DB + Auth + Storage]
+    |
+[Whisper Microservice on VPS]  ←  yt-dlp / ffmpeg / faster-whisper
+    |
+[Claude API / Ollama]  ←  AI post-processing
+
+2.2 Tech Stack Decisions
+Layer	Technology	Reason
+Frontend Framework	Next.js 14 (App Router)	SSR, API routes, Vercel-native
+Language	TypeScript	Type safety, better DX
+Styling	Tailwind CSS	Utility-first, rapid development
+Components	Shadcn UI	Accessible, customisable, unstyled primitives
+Icons	React Icons (Font Awesome)	Comprehensive, tree-shakeable
+Font	Satoshi	Modern, clean, tight tracking
+State (client)	Zustand	Lightweight, no boilerplate
+State (server)	SWR	Caching, revalidation, polling
+Forms	React Hook Form + Zod	Performance + validation
+Database	Supabase PostgreSQL	Free tier, built-in RLS
+Auth	Supabase Auth	Google OAuth + email, JWT, SSR
+Storage	Supabase Storage	Free tier, signed URLs
+Transcription	faster-whisper	Fastest Whisper implementation
+Media Extraction	yt-dlp	Supports 1000+ platforms
+Audio Processing	ffmpeg	Universal audio/video conversion
+AI Processing	Claude API (Anthropic)	Best quality at low volume
+Deployment: App	Vercel Free Tier	Zero cost, auto-deploy
+Deployment: VPS	Oracle Cloud Free Tier	4 CPU, 24GB RAM — free forever
+Microservice	Python FastAPI	Fast, async, easy Docker
+CI/CD	GitHub Actions	Free for public/private repos
+
+2.3 Frontend Architecture
+Directory Structure
+/app
+  /(auth)  — login, register, reset-password
+  /(dashboard)  — dashboard, transcripts, upload, search, settings
+  /api  — upload, jobs, transcribe, ai, export, webhooks
+/components
+  /ui  — Shadcn primitives
+  /layout  — Sidebar, Header, ThemeToggle
+  /transcript  — TranscriptCard, Editor, Viewer
+  /upload  — DropZone, URLInput, ProgressBar
+  /ai  — SummaryPanel, ActionItemsList, ChapterList
+  /export  — ExportModal, FormatSelector
+/lib  — supabase, validators, utils
+/types  — TypeScript interfaces
+/hooks  — useTranscript, useJobs, useSearch
+
+2.4 Backend API Routes
+Route	Method	Description
+/api/upload	POST	Receive file, store in Supabase Storage, create job
+/api/jobs	GET	List jobs for current user
+/api/jobs/[id]	GET	Get job status (for polling)
+/api/transcribe	POST	Trigger Whisper microservice
+/api/ai/generate	POST	Generate AI output (summary, blog, etc.)
+/api/export/[id]	GET	Generate and stream export file
+/api/webhooks/transcription	POST	Receive completed transcript from microservice
+
+2.5 Transcription Pipeline
+5.	User uploads file or pastes URL
+6.	Job created in DB (status: pending)
+7.	File stored in Supabase Storage
+8.	Next.js calls Whisper microservice asynchronously
+9.	Microservice downloads media via signed URL
+10.	If video: ffmpeg extracts audio track
+11.	If URL: yt-dlp downloads audio, ffmpeg normalises
+12.	faster-whisper processes audio → segments with timestamps
+13.	Microservice POSTs results to Next.js webhook
+14.	Next.js saves transcript to DB (status: completed)
+15.	Original media deleted from Supabase Storage
+16.	UI polling detects completion → renders transcript
+
+2.6 Whisper Model Recommendation
+Model	Speed	Accuracy	RAM Required	Recommendation
+tiny	Very fast	Acceptable	1 GB	Testing only
+base	Fast	Good	1 GB	Low-quality audio
+small	Moderate	Very Good	2 GB	DEFAULT — best balance
+medium	Slow	Excellent	5 GB	High-stakes accuracy
+
+2.7 Deployment Strategy
+Service	Platform	Cost	Notes
+Frontend + API	Vercel Free	$0	Serverless, 100GB bandwidth/mo
+Database	Supabase Free	$0	500MB DB, daily backups
+Storage	Supabase Storage	$0	1GB included free
+Auth	Supabase Auth	$0	50K MAU free
+Transcription VPS	Oracle Cloud Free	$0	4 OCPU, 24GB RAM, forever free
+AI Processing	Claude API	~$2-5/mo	Pay per use, very low at this scale
+Error Tracking	Sentry Free	$0	5K errors/month
+Uptime Monitor	UptimeRobot Free	$0	50 monitors
+
+2.8 Extensibility for Social Platforms
+The media extraction layer uses a pluggable interface pattern. Adding Instagram, TikTok or Facebook support in future requires only creating a new extractor class — no core changes needed:
+interface MediaExtractor {
+  canHandle(url: string): boolean;
+  extract(url: string): Promise<AudioBuffer>;
+}
+// Future: new InstagramExtractor(), new TikTokExtractor()
+
+2.9 Security Strategy
+•	All routes protected by Supabase JWT middleware
+•	Row Level Security (RLS) on all DB tables — users see only their own data
+•	Signed URLs for storage — no public media access
+•	Webhook secret shared between Next.js and microservice
+•	Rate limiting: max 10 uploads per hour per user
+•	Input validation via Zod on all API inputs
+•	yt-dlp sandboxed — args passed as array, never shell string
+•	HTTPS enforced on all services
+ 
+03  Application Flow
+3.1 Visitor Flow
+Land on voicescribe.app
+  → Redirected to /login (no public pages)
+  → Choose: Google OAuth  OR  Email + Password
+  → Authenticated → Redirect to /dashboard
+
+3.2 New User Onboarding
+First login (profile.onboarded = false)
+  → Welcome modal: 'Here's what VoiceScribe can do'
+  → Step 1: Upload your first file or paste a URL
+  → Step 2: Watch transcript generate in real time
+  → Step 3: Try an AI feature (Summary or Blog Post)
+  → Step 4: Export your transcript
+  → Mark onboarded = true → Dismiss modal → /dashboard
+
+3.3 Returning User Flow
+Visit voicescribe.app
+  → Middleware checks JWT → valid → /dashboard
+  → See: recent transcripts, processing jobs, search bar
+  → Click transcript → /transcripts/[id]
+  → OR click 'New Transcript' → /upload
+
+3.4 File Upload Flow
+17.	User visits /upload
+18.	Selects 'Upload File' tab
+19.	Drag & drop or click to select file
+20.	Client validates: file type and size (<500MB)
+21.	If invalid: show error toast with specific message
+22.	If valid: show file name, size, format preview
+23.	Select options: language (auto-detect default), Whisper model
+24.	Click 'Start Transcription'
+25.	POST /api/upload — file streamed to Supabase Storage
+26.	Job record created (status: pending)
+27.	Microservice triggered asynchronously
+28.	Redirect to /transcripts/[job_id] — processing state shown
+29.	UI polls job status every 3 seconds
+30.	On complete: transcript rendered
+31.	On error: retry button shown with error message
+
+3.5 URL Transcription Flow
+32.	User visits /upload, selects 'URL' tab
+33.	Pastes YouTube URL or direct media URL
+34.	Client validates URL format
+35.	Click 'Fetch & Transcribe'
+36.	POST /api/transcribe/url
+37.	yt-dlp validates, downloads audio
+38.	Audio uploaded to Supabase Storage
+39.	Whisper job triggered — same polling flow as file upload
+
+3.6 Transcript Page Flow
+The transcript detail page (/transcripts/[id]) has three tabs:
+•	Tab 1 — Transcript: Read with timestamps, in-page search, edit button
+•	Tab 2 — AI Insights: Summaries, key insights, action items, chapters
+•	Tab 3 — Repurpose: Blog post, social posts, study/meeting/research notes
+•	Sidebar: Export options (TXT, PDF, DOCX, SRT, VTT)
+
+3.7 Export Flow
+40.	User clicks Export in sidebar
+41.	Export Modal opens
+42.	Select format: TXT, PDF, DOCX, SRT, or VTT
+43.	Optional: include timestamps, summaries, AI content
+44.	Click Download
+45.	POST /api/export/[id]?format=pdf
+46.	Server generates and streams file to browser
+47.	Toast: 'Download started'
+
+3.8 Search Flow
+48.	Type in dashboard search bar (min 2 characters)
+49.	Debounced 300ms — query sent to /api/search
+50.	Full-text search: titles + transcript content + summaries
+51.	Results shown with title, date, duration, highlighted excerpt
+52.	Click result → /transcripts/[id]
+
+3.9 Error States
+Error	Display Location	Message
+File too large	Toast	File exceeds 500MB limit
+Unsupported format	Toast	Format not supported. Use MP3, MP4, WAV...
+Invalid URL	Inline	Please enter a valid YouTube or media URL
+Download failure	Job status	URL could not be downloaded. Try file upload.
+Transcription failure	Job status	Failed + Retry button
+Export failure	Toast	Export failed. Please try again.
+Session expired	Redirect	Session expired. Please sign in again.
+ 
+04  UI/UX Design Brief
+4.1 Brand Personality
+Attribute	Description
+Professional	Clean layouts, no clutter, purposeful whitespace
+Intelligent	Data-dense where needed, never overwhelming
+Calm	Low-saturation base with yellow accent, smooth transitions
+Modern	Sharp typography, minimal ornamentation, tight tracking
+
+4.2 Color System
+Dark Mode (Default)
+Token	HEX	Usage
+--bg-primary	#0A0A0A	Main background
+--bg-secondary	#111111	Card backgrounds
+--bg-tertiary	#1A1A1A	Input backgrounds, hover states
+--accent-primary	#F5C518	Primary actions, highlights, active states
+--accent-hover	#FFD740	Hover on yellow elements
+--text-primary	#FFFFFF	Primary text
+--text-secondary	#A0A0A0	Labels, secondary information
+--text-muted	#555555	Placeholders, disabled states
+--border	#2A2A2A	Default borders
+--success	#22C55E	Success states
+--error	#EF4444	Error states
+
+Light Mode
+Token	HEX	Usage
+--bg-primary	#FFFFFF	Main background
+--bg-secondary	#F5F5F5	Card backgrounds
+--accent-primary	#D4A017	Darker yellow for light-mode contrast
+--text-primary	#0A0A0A	Primary text
+--text-secondary	#555555	Secondary text
+--border	#E0E0E0	Default borders
+
+4.3 Typography
+Font Family: Satoshi (primary) / Inter (fallback) / system-ui
+Role	Size	Weight	Line Height	Letter Spacing
+Display H1	48px	700 Bold	1.1	-0.04em (tight)
+Heading H2	36px	700 Bold	1.2	-0.03em
+Heading H3	24px	600 SemiBold	1.3	-0.02em
+Heading H4	18px	600 SemiBold	1.4	-0.01em
+Body Large	16px	400 Regular	1.6	-0.01em
+Body Default	14px	400 Regular	1.6	0em
+Label	12px	500 Medium	1.4	+0.05em (wide)
+Mono / Code	13px	400 Regular	1.5	0em
+
+4.4 Spacing System
+Base unit: 4px — all spacing is a multiple of 4px.
+Token	Value	Tailwind Class
+xs	4px	p-1 / m-1
+sm	8px	p-2 / m-2
+md	16px	p-4 / m-4
+lg	24px	p-6 / m-6
+xl	32px	p-8 / m-8
+2xl	48px	p-12 / m-12
+3xl	64px	p-16 / m-16
+
+4.5 Component Tokens
+Border Radius
+Token	Value	Usage
+--radius-sm	6px	Badges, small inputs
+--radius-md	10px	Buttons, inputs
+--radius-lg	14px	Cards, panels
+--radius-xl	20px	Modals, large cards
+--radius-full	9999px	Pills, avatar, toggle
+
+4.6 Button System
+Variant	Background	Text	Use Case
+Primary	#F5C518	#0A0A0A (black)	Main CTAs: Transcribe, Export, Generate
+Secondary	#1A1A1A	#FFFFFF (white)	Cancel, secondary actions
+Ghost	Transparent	#A0A0A0	Toolbar actions, icon buttons
+Danger	#EF4444	#FFFFFF (white)	Delete, destructive actions
+Outline	Transparent	#F5C518	Alternative CTA, outlined style
+
+4.7 Dark/Light Mode
+•	Toggle button in top-right of navigation bar
+•	Icon: FaSun (light mode) / FaMoon (dark mode) from react-icons
+•	Preference saved to localStorage and user_preferences DB column
+•	Implemented via next-themes package
+•	CSS variables swapped on [data-theme='dark'] / [data-theme='light']
+
+4.8 Responsive Design Strategy
+Breakpoint	Layout
+Mobile (<768px)	Single column, bottom nav bar, full-width cards
+Tablet (768–1024px)	Sidebar collapses to icons, 2-col cards
+Desktop (>1024px)	Full sidebar, 3-col dashboard, side-by-side transcript + AI panel
+
+4.9 Accessibility Guidelines
+•	All interactive elements keyboard navigable (Tab order logical)
+•	Focus ring visible: --shadow-accent (yellow glow) on all focusable elements
+•	Color contrast: minimum 4.5:1 for body text, 3:1 for large text
+•	ARIA labels on all icon-only buttons
+•	Form errors announced via aria-live
+•	Skip-to-content link at top of every page
+ 
+05  Database Schema & Data Flow
+5.1 Tables Overview
+Table	Purpose	Key Fields
+profiles	Extended user data (extends auth.users)	id, role, theme_preference, onboarded
+transcripts	Core transcript records	id, user_id, title, source_type, status, duration
+transcript_versions	Versioned transcript content	id, transcript_id, version_number, content, segments
+ai_outputs	All AI-generated content	id, transcript_id, output_type, content
+processing_jobs	Async job queue	id, transcript_id, job_type, status, attempts
+exports	Generated export files	id, transcript_id, format, storage_path, expires_at
+
+5.2 Core Table Schemas
+transcripts
+id              UUID PRIMARY KEY
+user_id         UUID REFERENCES auth.users
+title           TEXT DEFAULT 'Untitled Transcript'
+source_type     TEXT CHECK IN ('upload', 'youtube', 'url')
+source_url      TEXT
+original_filename TEXT
+duration_seconds INTEGER
+language_detected TEXT
+whisper_model   TEXT DEFAULT 'small'
+status          TEXT CHECK IN ('pending', 'processing', 'completed', 'failed')
+created_at      TIMESTAMPTZ DEFAULT NOW()
+
+transcript_versions
+id              UUID PRIMARY KEY
+transcript_id   UUID REFERENCES transcripts
+version_number  INTEGER
+content         TEXT  — full transcript text
+segments        JSONB — [{start, end, text}] array with timestamps
+created_at      TIMESTAMPTZ DEFAULT NOW()
+
+ai_outputs
+id              UUID PRIMARY KEY
+transcript_id   UUID REFERENCES transcripts
+output_type     TEXT CHECK IN ('summary_short', 'summary_detailed',
+                'key_insights', 'action_items', 'chapters',
+                'blog_post', 'linkedin_post', 'twitter_thread',
+                'instagram_caption', 'study_notes', 'meeting_notes')
+content         TEXT
+created_at      TIMESTAMPTZ DEFAULT NOW()
+
+processing_jobs
+id              UUID PRIMARY KEY
+transcript_id   UUID REFERENCES transcripts
+job_type        TEXT CHECK IN ('transcription', 'url_download', 'ai_processing')
+status          TEXT CHECK IN ('queued', 'running', 'completed', 'failed', 'retrying')
+attempts        INTEGER DEFAULT 0
+max_attempts    INTEGER DEFAULT 3
+error           TEXT
+created_at      TIMESTAMPTZ DEFAULT NOW()
+
+5.3 Table Relationships
+auth.users
+  └── profiles (1:1)
+  └── transcripts (1:many)
+      └── transcript_versions (1:many)
+      └── ai_outputs (1:many)
+      └── processing_jobs (1:many)
+      └── exports (1:many)
+
+5.4 Row Level Security (RLS)
+RLS is enabled on every table. Users can only read and write their own data. Admin operations use the Supabase service role key on the server side only (never exposed to client).
+-- Example policy
+CREATE POLICY 'Users see own transcripts'
+  ON transcripts FOR ALL
+  USING (auth.uid() = user_id);
+
+5.5 Storage Buckets
+Bucket	Path Structure	Access	Retention
+media-uploads	{user_id}/{job_id}/original.ext	Private (user-scoped)	Deleted after transcription
+processed-audio	{user_id}/{job_id}/audio.wav	Private	Deleted after transcription
+exports	{user_id}/{transcript_id}/{timestamp}.{format}	Private (user-scoped)	7 days
+
+5.6 Full Data Flow
+Upload → Transcript Flow
+53.	Client POSTs file to /api/upload
+54.	Server validates file type and size
+55.	File uploaded to Supabase Storage (media-uploads bucket)
+56.	INSERT into transcripts (status: pending)
+57.	INSERT into processing_jobs (status: queued)
+58.	POST to Whisper microservice with signed URL
+59.	Microservice downloads, processes audio with faster-whisper
+60.	Microservice POSTs results to /api/webhooks/transcription
+61.	Webhook: INSERT transcript_versions (version 1, segments JSONB)
+62.	Webhook: UPDATE transcripts (status: completed)
+63.	Webhook: DELETE file from Supabase Storage
+64.	Client SWR polling detects completed → renders transcript
+
+AI Generation Flow
+65.	User clicks 'Generate Summary' on transcript page
+66.	Check ai_outputs for existing entry — return cached if found
+67.	POST /api/ai/generate with { transcript_id, output_type }
+68.	Server fetches transcript content from transcript_versions
+69.	Builds prompt and calls Claude API
+70.	INSERT result into ai_outputs
+71.	Return content to client — rendered in AI panel
+ 
+06  Implementation Plan
+Phase Overview
+Phase	Name	Duration	Dependency
+1	Foundation	3 days	None
+2	Authentication	3 days	Phase 1
+3	Upload System	4 days	Phase 2
+4	Transcription Engine	6 days	Phase 3
+5	Transcript Management	5 days	Phase 4
+6	AI Processing	6 days	Phase 5
+7	Export System	4 days	Phase 5
+8	Testing	5 days	Phases 6 & 7
+9	Deployment	4 days	Phase 8
+—	TOTAL	~40 days (~6 weeks)	—
+
+Phase 1 — Foundation (Days 1–3)
+Goals
+Project setup, tooling, design system, Supabase project initialised.
+Tasks
+72.	npx create-next-app@latest voicescribe --typescript --tailwind --app
+73.	Install: shadcn-ui, @fontsource/satoshi, next-themes, zustand, swr
+74.	Install: react-icons, react-hook-form, zod, @supabase/ssr
+75.	Configure tailwind.config.ts with Satoshi font + custom design tokens
+76.	Set up CSS variables for dark/light mode in globals.css
+77.	Create Supabase project: buckets (media-uploads, exports), enable Auth
+78.	Run initial DB migrations (profiles table + RLS policies)
+79.	GitHub repo setup + Vercel project linked to repo
+Risk
+Tailwind v4 breaking changes — pin to Tailwind v3.
+
+Phase 2 — Authentication (Days 4–6)
+Goals
+Full auth flow: Google OAuth + email/password, protected routes, user profiles.
+Tasks
+80.	Configure Supabase Auth: enable Google OAuth provider, email auth
+81.	Create /app/(auth)/login and /register pages with Satoshi font styling
+82.	Implement Supabase SSR helpers (cookie-based sessions for Next.js)
+83.	Create Next.js middleware for JWT validation on protected routes
+84.	Database trigger: auto-create profiles row on new auth.users entry
+85.	Implement logout in sidebar navigation
+86.	Check onboarded flag on first login to show welcome modal
+Risk
+Google OAuth redirect URL must match exactly in Google Console and Supabase settings.
+
+Phase 3 — Upload System (Days 7–10)
+Goals
+File and URL upload working, jobs tracked, processing status page live.
+Tasks
+87.	Create /upload page with File tab and URL tab switcher
+88.	Build DropZone component (drag & drop + click to select)
+89.	Build URLInput component with regex validation for YouTube and media URLs
+90.	Implement /api/upload route — stream file to Supabase Storage
+91.	Create transcript and processing_job DB records on upload
+92.	Build /transcripts/[id] processing state UI with spinner + status text
+93.	Implement SWR polling for job status (every 3 seconds)
+Key Decision
+Use Supabase Storage direct client upload to bypass Vercel's 4MB body size limit.
+
+Phase 4 — Transcription Engine (Days 11–16)
+Goals
+Whisper microservice deployed on free VPS, transcription working end-to-end.
+Tasks
+94.	Provision Oracle Cloud Free Tier ARM VM (4 OCPU, 24GB RAM)
+95.	Install: Docker, docker-compose, ffmpeg, Python 3.11
+96.	Build FastAPI app with endpoints: /transcribe, /extract-url, /health
+97.	Integrate faster-whisper (model: small) with timestamp output
+98.	Integrate yt-dlp for YouTube and direct-URL audio extraction
+99.	Implement webhook callback: POST results to Next.js /api/webhooks/transcription
+100.	Implement webhook secret verification (HMAC shared secret)
+101.	Containerise with Dockerfile + docker-compose.yml
+102.	GitHub Action: SSH deploy to VPS on push to main branch
+103.	Implement /api/webhooks/transcription in Next.js (save to DB, update status)
+104.	End-to-end test: upload MP3 → transcript appears in dashboard
+Risk
+ARM CPU may need faster-whisper CPU mode — set device='cpu' in configuration.
+
+Phase 5 — Transcript Management (Days 17–21)
+Goals
+Full transcript viewing, editing, version history, dashboard, and search.
+Tasks
+105.	Build TranscriptViewer: timestamps on left, text on right, in-page search
+106.	Build TranscriptEditor with debounced autosave (2s delay)
+107.	Version save logic: INSERT transcript_versions on every save
+108.	Build version history dropdown with restore confirmation modal
+109.	Create /dashboard with transcript grid cards (title, date, duration, status)
+110.	Implement /api/search with PostgreSQL full-text search (GIN index)
+111.	Build SearchResults with excerpt highlighting
+
+Phase 6 — AI Processing (Days 22–27)
+Goals
+All AI features working: summaries, insights, action items, chapters, repurposing.
+Tasks
+112.	Add Claude API key to Vercel environment variables
+113.	Build prompt templates for each of the 15 output types
+114.	Create /api/ai/generate route handler with output type routing
+115.	Build AIPanel component with tabs: Insights / Repurpose
+116.	Build output components: SummaryBlock, ActionItemsList, ChapterList
+117.	Build repurpose components: BlogPost, SocialPost, NotesBlock
+118.	Implement output caching: check ai_outputs before calling Claude
+119.	Add loading skeletons for AI generation states
+Cost Control
+Implement per-user daily generation limit (e.g. 20 AI outputs/day) to manage Claude API costs.
+
+Phase 7 — Export System (Days 28–31)
+Goals
+All 5 export formats (TXT, PDF, DOCX, SRT, VTT) working.
+Tasks
+120.	Install: jspdf (PDF generation), docx (DOCX generation)
+121.	TXT generator: plain transcript text with optional timestamps
+122.	SRT generator: format segments as SRT subtitle blocks
+123.	VTT generator: format segments as WebVTT blocks
+124.	PDF generator: jsPDF with title, metadata, transcript content
+125.	DOCX generator: title, timestamp table, full transcript content
+126.	Create ExportModal component with format selection and options
+127.	Implement /api/export/[id] route — generate and stream file
+
+Phase 8 — Testing (Days 32–36)
+Goals
+All critical paths tested. No P0 bugs in production.
+Tasks
+128.	Set up Vitest for unit tests
+129.	Unit tests: Zod validators, export generators, URL validators
+130.	Set up Playwright for E2E testing
+131.	E2E flows: login, upload, transcript view, AI generation, export, search
+132.	Test all export formats with edge cases (long transcripts, special characters)
+133.	Performance test: transcription of a 60-minute audio file
+134.	Security test: RLS bypass attempts, unauthorized access attempts
+
+Phase 9 — Deployment (Days 37–40)
+Goals
+Production-ready deployment with monitoring and documentation.
+Tasks
+135.	Vercel: configure all production environment variables
+136.	Supabase: run all DB migrations on production environment
+137.	Configure CORS on VPS microservice (Vercel domain only)
+138.	Set up Sentry error tracking (frontend and API routes)
+139.	Set up UptimeRobot monitors: Vercel app, Supabase, VPS /health
+140.	Configure custom domain if applicable
+141.	Write README with setup instructions and environment variable guide
+142.	Final smoke test of all features in production
+ 
+Final Analysis
+Recommended Architecture Summary
+Component	Choice	Reason
+Frontend + API	Next.js on Vercel	Free hosting, SSR, route handlers in one
+Database	Supabase PostgreSQL	Free, built-in auth + RLS + storage
+Transcription	faster-whisper on Oracle Free VPS	Zero cost, high quality
+AI Processing	Claude API	Best quality; cheapest at low volume (~$3/mo)
+Media Extraction	yt-dlp on VPS	Free, supports 1000+ sites
+
+MVP Features — Ship These First
+•	Authentication (Google OAuth + email/password)
+•	File upload (audio and video)
+•	YouTube URL transcription
+•	Transcript viewer + inline editor
+•	Short summary generation
+•	Dashboard with transcript list
+•	Export: TXT + SRT
+•	Full-text search
+
+Postpone to Version 2
+•	Blog and social media content generation
+•	DOCX and PDF exports
+•	Version history
+•	Chapter generation
+•	Action items extraction
+•	Instagram / TikTok / Facebook URL extraction
+
+Technical Challenges & Solutions
+Challenge	Solution
+Vercel 10s function timeout	Async job queue + webhook callback pattern
+Large file upload (>4MB)	Supabase Storage direct client upload, bypasses Vercel
+Whisper memory usage	small model needs ~2GB; Oracle Free has 24GB
+yt-dlp platform instability	Version-pin yt-dlp; abstracted extractor layer
+Claude API costs at scale	Cache outputs in ai_outputs; per-user daily limits
+
+Monthly Cost Analysis
+Service	Plan	Cost
+Vercel	Free Tier	$0
+Supabase	Free Tier	$0
+Oracle Cloud VPS	Always Free Tier	$0
+Claude API	Pay-per-use (<100hrs media/mo)	~$2–5
+Domain	Any registrar	~$1
+TOTAL		~$3–6 / month
+
+Free Tier Limitations to Watch
+•	Supabase: 500MB database, 1GB storage, 50MB max file size per upload
+•	Vercel: 100GB bandwidth/month, 10-second serverless function timeout
+•	Oracle Free: CPU-only (no GPU), so Whisper runs slower than with GPU
+•	Claude API: no free tier — budget approximately $5/month for this scale
+
+Future Scaling Path
+143.	If users grow beyond 20: upgrade Supabase to Pro ($25/mo)
+144.	If transcription volume grows: upgrade to Hetzner with GPU, or use Replicate API
+145.	If Claude costs grow: switch to local Ollama (Llama 3) on the VPS
+146.	If storage needs grow: move exports to Cloudflare R2 ($0.015/GB)
+
+Recommended Development Order
+147.	Auth — without this, nothing else is accessible
+148.	Upload — foundation for the core workflow
+149.	Transcription Pipeline — the core value proposition
+150.	Transcript View — make the output usable
+151.	Search — essential for a growing library
+152.	AI Features — the multiplier on the transcript's value
+153.	Export — the output delivery mechanism
+154.	Polish + Responsive — UX quality
+155.	Deploy + Monitor — production hardening
+
+
+VoiceScribe Project Blueprint — Complete
+Generated June 2026 — Ready for immediate development
