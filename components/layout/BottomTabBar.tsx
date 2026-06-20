@@ -4,7 +4,9 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { FaHome, FaUpload, FaFileAlt, FaSearch, FaCog } from 'react-icons/fa';
+import { FaHome, FaUpload, FaFileAlt, FaSearch, FaCog, FaShieldAlt } from 'react-icons/fa';
+import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect } from 'react';
 
 interface TabItem {
   label: string;
@@ -22,10 +24,34 @@ const tabItems: TabItem[] = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const supabase = createClient();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    async function checkRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (profile?.role === 'admin') {
+          setIsAdmin(true);
+        }
+      }
+    }
+    checkRole();
+  }, [supabase]);
+
+  const activeTabs = [...tabItems];
+  if (isAdmin) {
+    activeTabs.push({ label: 'Admin', href: '/admin', icon: FaShieldAlt });
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-lg border-t border-border flex items-center justify-around px-2 pb-safe z-30">
-      {tabItems.map((item) => {
+      {activeTabs.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
 

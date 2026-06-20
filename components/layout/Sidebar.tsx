@@ -17,6 +17,7 @@ import {
   FaSignOutAlt,
   FaChevronLeft,
   FaChevronRight,
+  FaShieldAlt,
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 
@@ -51,7 +52,7 @@ export function Sidebar() {
     ? '/Logo/logo_light_theme_navbar.svg'
     : '/Logo/logo_dark_theme_navbar.svg';
 
-  const [user, setUser] = useState<{ email?: string; full_name?: string; avatar_url?: string } | null>(null);
+  const [user, setUser] = useState<{ email?: string; full_name?: string; avatar_url?: string; role?: string } | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -60,7 +61,7 @@ export function Sidebar() {
         // Fetch profile details
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name, avatar_url')
+          .select('full_name, avatar_url, role')
           .eq('id', user.id)
           .single();
 
@@ -68,6 +69,7 @@ export function Sidebar() {
           email: user.email,
           full_name: profile?.full_name || '',
           avatar_url: profile?.avatar_url || '',
+          role: profile?.role || 'user',
         });
       }
     }
@@ -163,6 +165,30 @@ export function Sidebar() {
             </Link>
           );
         })}
+        
+        {user?.role === 'admin' && (() => {
+          const isActive = pathname === '/admin' || pathname.startsWith('/admin/');
+          return (
+            <Link
+              key="/admin"
+              href="/admin"
+              className={cn(
+                'flex items-center gap-3 px-3 h-10 rounded-xl text-sm font-medium transition duration-150 relative group',
+                isActive
+                  ? 'bg-accent-muted text-primary border border-primary/20'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent'
+              )}
+            >
+              <FaShieldAlt className={cn('text-lg min-w-[20px]', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+              {sidebarOpen && <span className="truncate">Admin Panel</span>}
+              {!sidebarOpen && (
+                <div className="absolute left-16 bg-zinc-950 text-white text-xs py-1 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50 shadow-md">
+                  Admin Panel
+                </div>
+              )}
+            </Link>
+          );
+        })()}
       </nav>
 
       {/* User / Footer section */}
