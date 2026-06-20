@@ -72,6 +72,11 @@ export function FileDropZone({ onFileSelected, onFileRemoved, selectedFile, disa
                 {getExt(selectedFile.name)}
               </span>
               <span className="text-xs text-muted-foreground">{formatSize(selectedFile.size)}</span>
+              {selectedFile.size > 25 * 1024 * 1024 && (
+                <span className="text-xs bg-amber-500/15 text-amber-500 font-semibold px-2 py-0.5 rounded-full">
+                  Large file — some engines skipped
+                </span>
+              )}
             </div>
           </div>
           <FaCheckCircle className="text-green-500 flex-shrink-0" size={20} />

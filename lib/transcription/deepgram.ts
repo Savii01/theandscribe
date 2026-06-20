@@ -1,7 +1,7 @@
-import { createClient } from '@deepgram/sdk';
+import { DeepgramClient } from '@deepgram/sdk';
 import { TranscriptionResult } from './types';
 
-const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
+const deepgram = new DeepgramClient({ apiKey: process.env.DEEPGRAM_API_KEY! });
 
 export async function transcribeWithDeepgram(
   audioBuffer: Buffer,
@@ -9,7 +9,7 @@ export async function transcribeWithDeepgram(
   language?: string
 ): Promise<TranscriptionResult> {
 
-  const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+  const response = await deepgram.listen.v1.media.transcribeFile(
     audioBuffer,
     {
       model: 'nova-2',
@@ -18,13 +18,9 @@ export async function transcribeWithDeepgram(
       utterances: true,
       smart_format: true,
     }
-  );
+  ) as any;
 
-  if (error) {
-    throw new Error(`Deepgram error: ${error.message}`);
-  }
-
-  const channel = result?.results?.channels?.[0];
+  const channel = response?.results?.channels?.[0];
   const alternative = channel?.alternatives?.[0];
 
   if (!alternative) {
@@ -32,7 +28,7 @@ export async function transcribeWithDeepgram(
   }
 
   // Convert Deepgram words to segments
-  const segments = alternative.words?.reduce((acc, word, i) => {
+  const segments = alternative.words?.reduce((acc: any, word: any, i: number) => {
     const segIndex = Math.floor(i / 10);
     if (!acc[segIndex]) {
       acc[segIndex] = {
@@ -46,11 +42,11 @@ export async function transcribeWithDeepgram(
     return acc;
   }, [] as { start: number; end: number; text: string }[]) ?? [];
 
-  const duration = result?.metadata?.duration ?? 0;
+  const duration = response?.metadata?.duration ?? 0;
 
   return {
     text: alternative.transcript,
-    segments: segments.map(s => ({
+    segments: segments.map((s: any) => ({
       ...s,
       text: s.text.trim(),
     })),

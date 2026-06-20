@@ -12,6 +12,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'theandscribe — Personal AI Transcription Platform',
   description: 'AI-powered personal audio and video transcription and content repurposing platform.',
+  icons: {
+    icon: '/Logo/favicon.svg',
+  },
 };
 
 export default function RootLayout({

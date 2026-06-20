@@ -1309,10 +1309,35 @@ URL to API route. This bypasses Vercel's 4.5MB body size limit entirely.
 
 | Service | Limit | Action if hit |
 |---|---|---|
-| Groq Whisper | 28,800 secs/day | Gladia fallback (already coded) |
-| Gladia | 10hrs/month | Extremely unlikely at your usage |
+| Groq Whisper | 28,800 secs/day | Handled by concurrent fallback to Deepgram/AssemblyAI |
+| Gladia | 10hrs/month | Handled by concurrent fallback to Deepgram/AssemblyAI |
+| Deepgram | $200 free credit | Lifetime free allowance for personal-use scale |
+| AssemblyAI | 100 hours/month | Lifetime free allowance for personal-use scale |
 | Supabase DB | 500MB | You'd need ~14 years to hit this |
 | Supabase Storage | 1GB | Media deleted = never hit |
 | Vercel bandwidth | 100GB/month | Far exceeds your need |
 | Vercel functions | 10s timeout | Only matters for files >10mins |
+
+---
+
+# DOCUMENT 6 — PARALLEL MULTI-ENGINE & SPLASH LANDING PAGE REFACTOR (v2.1)
+
+## 6.1 Concurrent Multi-Engine Pipeline
+Instead of sequential waterfall checks, transcription now runs concurrently via `Promise.any` to fetch results from the fastest responsive API.
+- **Provider Limits Enforced**:
+  - **File Size**: Groq (<25MB), Gladia (<20MB), AssemblyAI (<500MB), Deepgram (<500MB).
+  - **Quota Limits**: Dynamic database queries in `quota.ts` query monthly limits for each provider and skip exhausted engines.
+- **Improved Errors**: Surfaced individual API messages inside the `AggregateError` envelope.
+
+## 6.2 Splash Screen & Landing Page
+The root path `/` is now public.
+- **Splash Screen Loader**: Features a premium yellow (`#F5C518`) fullscreen container with the black SVG logo (`logo_black.svg`) and brand typography.
+- **Flow**:
+  - **Unauthenticated**: Loader fades out smoothly after checking auth (1.2s minimum duration) to reveal the feature-rich landing page.
+  - **Authenticated**: Loader stays solid and redirects directly to `/dashboard` via client-side transitions.
+
+## 6.3 Dynamic SVG Branding
+- **Favicon**: Configured standard `favicon.svg` in `metadata.icons` inside `layout.tsx`.
+- **Theme-Aware Navbar**: Integrated `/Logo/logo_light_theme_navbar.svg` and `/Logo/logo_dark_theme_navbar.svg` using client hydration-safe theme resolution.
+- **Auth branding**: Swapped custom CSS text box wrappers for original SVG logo vectors in `login`, `register`, and `reset-password` layouts.
 

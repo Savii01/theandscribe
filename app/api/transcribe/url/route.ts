@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     const filename = `audio.${ext}`;
 
     // Transcribe
-    const result = await transcribeAudio(audioBuffer, filename, language, model);
+    const result = await transcribeAudio(user.id, audioBuffer, filename, language, model);
 
     // Save transcript version
     await supabase.from('transcript_versions').insert({

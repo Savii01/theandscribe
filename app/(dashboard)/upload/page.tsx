@@ -42,7 +42,7 @@ export default function UploadPage() {
   const runTranscription = async (jobId: string, transcriptId: string, payload: object, endpoint: string) => {
     setStage('transcribing');
     setProgress(50);
-    setStatusMsg('Transcribing with Groq Whisper...');
+    setStatusMsg('Transcribing across multiple engines...');
 
     const resp = await fetch(endpoint, {
       method: 'POST',
@@ -259,7 +259,7 @@ export default function UploadPage() {
               className="w-full h-12 bg-primary hover:bg-accent-hover text-black font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
               <FaBolt size={14} />
-              Transcribe with Groq
+              Start Transcription
             </button>
           )}
         </div>
@@ -286,19 +286,19 @@ export default function UploadPage() {
               </select>
             </div>
 
-            {/* Model info */}
+            {/* Engine info */}
             <div className="p-3 rounded-xl bg-muted/50 border border-border space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-muted-foreground">Model</span>
-                <span className="text-xs font-bold text-foreground">Whisper Large-v3</span>
+                <span className="text-xs font-semibold text-muted-foreground">Strategy</span>
+                <span className="text-xs font-bold text-primary">Multi-Engine</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-muted-foreground">Provider</span>
-                <span className="text-xs font-bold text-primary">Groq (Free)</span>
+                <span className="text-xs font-semibold text-muted-foreground">Engines</span>
+                <span className="text-xs font-bold text-foreground">Groq · Deepgram · AssemblyAI</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-muted-foreground">Fallback</span>
-                <span className="text-xs text-muted-foreground">Gladia</span>
+                <span className="text-xs font-semibold text-muted-foreground">Method</span>
+                <span className="text-xs text-muted-foreground">Fastest result wins</span>
               </div>
             </div>
           </div>
@@ -307,10 +307,10 @@ export default function UploadPage() {
           <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <FaBolt className="text-primary" size={14} />
-              <span className="text-xs font-bold text-primary uppercase tracking-wider">Powered by Groq</span>
+              <span className="text-xs font-bold text-primary uppercase tracking-wider">Multi-Engine Transcription</span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Transcription typically completes in <strong className="text-foreground">5–15 seconds</strong> for a 3-minute file via Groq's ultra-fast Whisper API. Media files are automatically deleted after processing.
+              Your file is sent to multiple transcription engines simultaneously. The <strong className="text-foreground">fastest result wins</strong> — typically completing in 5–30 seconds. Media files are automatically deleted after processing.
             </p>
           </div>
         </div>

@@ -17,14 +17,14 @@ import {
   FaMoon,
   FaLaptop
 } from 'react-icons/fa';
-import { useGroqUsage } from '@/hooks/useGroqUsage';
+import { useDailyUsage } from '@/hooks/useDailyUsage';
 import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
-  const { usageCount, dailyLimit, remaining, isLoading: usageLoading } = useGroqUsage();
+  const { usageCount, dailyLimit, remaining, isLoading: usageLoading } = useDailyUsage();
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
@@ -244,7 +244,7 @@ export default function SettingsPage() {
               <FaBolt className="text-primary" size={13} /> Usage & Quotas
             </h3>
             <p className="text-xs text-muted-foreground">
-              To keep the platform $0/month indefinitely, daily limits are applied to stay comfortably within the Groq API free tier.
+              Multiple transcription engines run simultaneously to stay within each provider's free tier limits. The fastest result wins.
             </p>
 
             <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
@@ -268,12 +268,12 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="border border-border rounded-xl p-3.5 bg-muted/20">
-                <p className="font-semibold text-muted-foreground mb-0.5">Groq API Tier</p>
-                <p className="font-bold text-primary">Free Tier Enabled</p>
+                <p className="font-semibold text-muted-foreground mb-0.5">Strategy</p>
+                <p className="font-bold text-primary">Multi-Engine</p>
               </div>
               <div className="border border-border rounded-xl p-3.5 bg-muted/20">
-                <p className="font-semibold text-muted-foreground mb-0.5">Backup Engine</p>
-                <p className="font-bold text-foreground">Gladia STT Fallback</p>
+                <p className="font-semibold text-muted-foreground mb-0.5">Method</p>
+                <p className="font-bold text-foreground">Fastest Result Wins</p>
               </div>
             </div>
 

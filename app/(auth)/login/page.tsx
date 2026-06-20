@@ -1,16 +1,29 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { FaGoogle, FaEye, FaEyeSlash, FaSpinner, FaKeyboard } from 'react-icons/fa';
 import Link from 'next/link';
 
-export default function LoginPage() {
+import { useTheme } from 'next-themes';
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const { resolvedTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+
+  useEffect(() => {
+    setThemeMounted(true);
+  }, []);
+
+  const logoSrc = themeMounted && resolvedTheme === 'light'
+    ? '/Logo/logo_light_theme_navbar.svg'
+    : '/Logo/logo_dark_theme_navbar.svg';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -90,9 +103,11 @@ export default function LoginPage() {
 
         {/* Branding header */}
         <div className="flex items-center space-x-3 z-10">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-bold text-black text-xl">
-            TS
-          </div>
+          <img
+            src="/Logo/logo_dark_theme_navbar.svg"
+            alt="theandscribe logo"
+            className="w-10 h-10 rounded-lg select-none pointer-events-none"
+          />
           <span className="font-heading font-bold text-xl tracking-tight text-white">
             theandscribe
           </span>
@@ -145,9 +160,13 @@ export default function LoginPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-6 md:hidden">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-bold text-black text-lg">
-                TS
-              </div>
+              {themeMounted && (
+                <img
+                  src={logoSrc}
+                  alt="theandscribe logo"
+                  className="w-8 h-8 rounded-lg select-none pointer-events-none"
+                />
+              )}
               <span className="font-heading font-bold text-lg tracking-tight text-foreground">
                 theandscribe
               </span>
@@ -261,5 +280,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen w-full items-center justify-center bg-zinc-950 text-white">
+        <FaSpinner className="animate-spin text-primary" size={32} />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

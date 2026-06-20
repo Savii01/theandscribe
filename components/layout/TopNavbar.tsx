@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useGroqUsage } from '@/hooks/useGroqUsage';
+import { useDailyUsage } from '@/hooks/useDailyUsage';
 import { FaPlus, FaSpinner } from 'react-icons/fa';
 import Link from 'next/link';
 
 export function TopNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { usageCount, dailyLimit, isLoading } = useGroqUsage();
+  const { usageCount, dailyLimit, isLoading } = useDailyUsage();
 
   // Determine the page title based on the path
   const getPageTitle = () => {
@@ -37,11 +37,11 @@ export function TopNavbar() {
       <div className="flex items-center gap-4">
         {/* Usage Pill */}
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs">
-          <span className="text-muted-foreground">Groq:</span>
+          <span className="text-muted-foreground">Daily Transcriptions:</span>
           {isLoading ? (
             <FaSpinner className="animate-spin text-primary" size={10} />
           ) : (
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold text-primary">
               {usageCount}/{dailyLimit}
             </span>
           )}

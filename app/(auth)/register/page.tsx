@@ -7,9 +7,21 @@ import { toast } from 'sonner';
 import { FaGoogle, FaEye, FaEyeSlash, FaSpinner, FaKeyboard } from 'react-icons/fa';
 import Link from 'next/link';
 
+import { useTheme } from 'next-themes';
+
 export default function RegisterPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { resolvedTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+
+  useEffect(() => {
+    setThemeMounted(true);
+  }, []);
+
+  const logoSrc = themeMounted && resolvedTheme === 'light'
+    ? '/Logo/logo_light_theme_navbar.svg'
+    : '/Logo/logo_dark_theme_navbar.svg';
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -126,9 +138,11 @@ export default function RegisterPage() {
 
         {/* Branding header */}
         <div className="flex items-center space-x-3 z-10">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-bold text-black text-xl">
-            TS
-          </div>
+          <img
+            src="/Logo/logo_dark_theme_navbar.svg"
+            alt="theandscribe logo"
+            className="w-10 h-10 rounded-lg select-none pointer-events-none"
+          />
           <span className="font-heading font-bold text-xl tracking-tight text-white">
             theandscribe
           </span>
@@ -181,9 +195,13 @@ export default function RegisterPage() {
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center space-x-3 mb-6 md:hidden">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-bold text-black text-lg">
-                TS
-              </div>
+              {themeMounted && (
+                <img
+                  src={logoSrc}
+                  alt="theandscribe logo"
+                  className="w-8 h-8 rounded-lg select-none pointer-events-none"
+                />
+              )}
               <span className="font-heading font-bold text-lg tracking-tight text-foreground">
                 theandscribe
               </span>

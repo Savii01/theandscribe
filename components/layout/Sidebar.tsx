@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useUIStore } from '@/lib/store/ui';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import {
   FaHome,
@@ -38,6 +39,17 @@ export function Sidebar() {
   const router = useRouter();
   const supabase = createClient();
   const { sidebarOpen, toggleSidebar } = useUIStore();
+
+  const { resolvedTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+
+  useEffect(() => {
+    setThemeMounted(true);
+  }, []);
+
+  const logoSrc = themeMounted && resolvedTheme === 'light'
+    ? '/Logo/logo_light_theme_navbar.svg'
+    : '/Logo/logo_dark_theme_navbar.svg';
 
   const [user, setUser] = useState<{ email?: string; full_name?: string; avatar_url?: string } | null>(null);
 
@@ -108,10 +120,14 @@ export function Sidebar() {
 
       {/* Header / Logo */}
       <div className={cn('flex items-center h-14 px-4 border-b border-border', sidebarOpen ? 'justify-between' : 'justify-center')}>
-        <div className="flex items-center gap-2 overflow-hidden">
-          <div className="w-8 h-8 min-w-[32px] rounded-lg bg-primary flex items-center justify-center font-bold text-black text-lg">
-            TS
-          </div>
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          {themeMounted && (
+            <img
+              src={logoSrc}
+              alt="theandscribe logo"
+              className="w-8 h-8 min-w-[32px] rounded-lg select-none pointer-events-none"
+            />
+          )}
           {sidebarOpen && (
             <span className="font-heading font-bold text-lg tracking-tight truncate">
               theandscribe

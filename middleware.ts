@@ -6,7 +6,7 @@ const AUTH_REDIRECT = '/login';
 const POST_AUTH_REDIRECT = '/dashboard';
 
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  return pathname === '/' || PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 function isAuthPage(pathname: string): boolean {

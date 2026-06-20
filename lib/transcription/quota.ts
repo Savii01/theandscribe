@@ -86,6 +86,42 @@ export async function quotaPreflightCheck(userId: string): Promise<boolean> {
 }
 
 /**
+ * Resolves the list of providers that have remaining monthly quota.
+ */
+export async function getAvailableProviders(userId: string): Promise<ProviderName[]> {
+  await seedProviderUsage(userId);
+
+  const supabase = await createServiceClient();
+  const monthYear = getCurrentMonth();
+
+  const { data: usage, error } = await supabase
+    .from('provider_usage')
+    .select('provider, minutes_used, minutes_limit')
+    .eq('user_id', userId)
+    .eq('month_year', monthYear);
+
+  if (error || !usage || usage.length === 0) {
+    console.error('Failed to read usage to determine available providers:', error);
+    return ['groq', 'gladia', 'assemblyai', 'deepgram']; // Fallback to all on error
+  }
+
+  const usageMap = new Map<string, { used: number; limit: number }>();
+  usage.forEach((u: any) => {
+    usageMap.set(u.provider, { used: u.minutes_used, limit: u.minutes_limit });
+  });
+
+  const available: ProviderName[] = [];
+  for (const provider of Object.keys(PROVIDER_LIMITS) as ProviderName[]) {
+    const usageInfo = usageMap.get(provider);
+    if (!usageInfo || usageInfo.used < usageInfo.limit) {
+      available.push(provider);
+    }
+  }
+
+  return available;
+}
+
+/**
  * Increments the minutes used for a provider.
  */
 export async function incrementProviderUsage(userId: string, provider: ProviderName, durationSeconds: number) {

@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     const filename = storageKey.split('/').pop() ?? 'audio.mp3';
 
     // Transcribe
-    const result = await transcribeAudio(audioBuffer, filename, language, model);
+    const result = await transcribeAudio(user.id, audioBuffer, filename, language, model);
 
     // Insert transcript version
     await supabase.from('transcript_versions').insert({

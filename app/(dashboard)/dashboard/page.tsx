@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           description="Audio processed"
         />
         <StatsCard
-          label="Groq Quota"
+          label="Daily Quota"
           value={`${Math.round(((todayCount ?? 0) / 10) * 100)}%`}
           icon={<FaBolt />}
           description="Daily limit used"

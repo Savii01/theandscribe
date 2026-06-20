@@ -24,7 +24,7 @@ export async function transcribeWithGroq(
   language?: string,
   model: WhisperModel = 'whisper-large-v3'
 ): Promise<GroqTranscriptionResult> {
-  const file = new File([audioBuffer], filename, { type: getMimeType(filename) });
+  const file = new File([new Uint8Array(audioBuffer)], filename, { type: getMimeType(filename) });
 
   const response = await groq.audio.transcriptions.create({
     file,
@@ -32,9 +32,9 @@ export async function transcribeWithGroq(
     response_format: 'verbose_json',
     timestamp_granularities: ['segment'],
     ...(language && language !== 'auto' ? { language } : {}),
-  });
+  }) as any;
 
-  const segments: TranscriptSegment[] = (response.segments ?? []).map((seg, idx) => ({
+  const segments: TranscriptSegment[] = (response.segments ?? []).map((seg: any, idx: number) => ({
     id: idx,
     start: seg.start,
     end: seg.end,

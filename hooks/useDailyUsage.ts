@@ -9,11 +9,11 @@ const DAILY_LIMIT = 10;
  * Hook to retrieve the user's daily transcription count and calculate remaining quota.
  * Uses SWR to fetch and cache data.
  */
-export function useGroqUsage() {
+export function useDailyUsage() {
   const supabase = createClient();
 
   const { data, error, mutate, isLoading } = useSWR(
-    'groq-usage-today',
+    'daily-usage-today',
     async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return 0;

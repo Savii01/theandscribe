@@ -22,7 +22,7 @@ export async function transcribeWithGladia(
 
   // Step 1: Upload the file
   const uploadFormData = new FormData();
-  const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+  const blob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/mpeg' });
   uploadFormData.append('audio', blob, filename);
 
   const uploadResponse = await fetch('https://api.gladia.io/v2/upload', {
