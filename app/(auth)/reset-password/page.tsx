@@ -46,16 +46,16 @@ export default function ResetPasswordPage() {
         <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] rounded-full bg-yellow-500/5 blur-[100px] pointer-events-none" />
 
         {/* Brand */}
-        <div className="flex items-center space-x-3 mb-8 justify-center">
+        <Link href="/" className="flex items-center space-x-3 mb-8 justify-center hover:opacity-80 transition-opacity">
           <img
             src="/Logo/logo_dark_theme_navbar.svg"
             alt="theandscribe logo"
-            className="w-8 h-8 rounded-lg select-none pointer-events-none"
+            className="w-8 h-8 rounded-lg select-none"
           />
           <span className="font-heading font-bold text-lg tracking-tight text-white">
             theandscribe
           </span>
-        </div>
+        </Link>
 
         {!submitted ? (
           <>

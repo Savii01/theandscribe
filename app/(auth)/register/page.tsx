@@ -137,16 +137,16 @@ export default function RegisterPage() {
         <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] rounded-full bg-yellow-500/5 blur-[120px]" />
 
         {/* Branding header */}
-        <div className="flex items-center space-x-3 z-10">
+        <Link href="/" className="flex items-center space-x-3 z-10 hover:opacity-80 transition-opacity">
           <img
             src="/Logo/logo_dark_theme_navbar.svg"
             alt="theandscribe logo"
-            className="w-10 h-10 rounded-lg select-none pointer-events-none"
+            className="w-10 h-10 rounded-lg select-none"
           />
           <span className="font-heading font-bold text-xl tracking-tight text-white">
             theandscribe
           </span>
-        </div>
+        </Link>
 
         {/* Main message */}
         <div className="my-auto max-w-lg z-10">
@@ -194,18 +194,18 @@ export default function RegisterPage() {
         <div className="mx-auto w-full max-w-md">
           {/* Header */}
           <div className="mb-6">
-            <div className="flex items-center space-x-3 mb-6 md:hidden">
+            <Link href="/" className="flex items-center space-x-3 mb-6 md:hidden hover:opacity-80 transition-opacity">
               {themeMounted && (
                 <img
                   src={logoSrc}
                   alt="theandscribe logo"
-                  className="w-8 h-8 rounded-lg select-none pointer-events-none"
+                  className="w-8 h-8 rounded-lg select-none"
                 />
               )}
               <span className="font-heading font-bold text-lg tracking-tight text-foreground">
                 theandscribe
               </span>
-            </div>
+            </Link>
             <h2 className="text-3xl font-heading font-bold tracking-tighter text-foreground mb-2">
               Create an account
             </h2>

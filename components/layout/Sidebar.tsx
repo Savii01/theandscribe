@@ -120,12 +120,12 @@ export function Sidebar() {
 
       {/* Header / Logo */}
       <div className={cn('flex items-center h-14 px-4 border-b border-border', sidebarOpen ? 'justify-between' : 'justify-center')}>
-        <div className="flex items-center gap-2.5 overflow-hidden">
+        <Link href="/" className="flex items-center gap-2.5 overflow-hidden hover:opacity-80 transition-opacity">
           {themeMounted && (
             <img
               src={logoSrc}
               alt="theandscribe logo"
-              className="w-8 h-8 min-w-[32px] rounded-lg select-none pointer-events-none"
+              className="w-8 h-8 min-w-[32px] rounded-lg select-none"
             />
           )}
           {sidebarOpen && (
@@ -133,7 +133,7 @@ export function Sidebar() {
               theandscribe
             </span>
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Navigation Links */}

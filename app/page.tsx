@@ -69,18 +69,18 @@ export default function LandingPage() {
         <div className="min-h-screen bg-background text-foreground flex flex-col antialiased">
           {/* Header */}
           <header className="h-16 border-b border-border bg-background/50 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {mounted && (
                 <img
                   src={logoSrc}
                   alt="theandscribe logo"
-                  className="w-8 h-8 rounded-lg select-none pointer-events-none"
+                  className="w-8 h-8 rounded-lg select-none"
                 />
               )}
               <span className="font-heading font-black text-lg tracking-tightest uppercase select-none">
                 theandscribe
               </span>
-            </div>
+            </Link>
 
             <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-muted-foreground">
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
