@@ -16,7 +16,6 @@ import {
   FaCog,
   FaSignOutAlt,
   FaChevronLeft,
-  FaChevronRight,
   FaShieldAlt,
 } from 'react-icons/fa';
 import { toast } from 'sonner';
@@ -107,17 +106,19 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col h-screen border-r border-border bg-background transition-all duration-300 relative z-20',
+        'hidden md:flex flex-col h-screen border-r border-border bg-background transition-all duration-300 relative z-20 animate-slide-left',
         sidebarOpen ? 'w-60' : 'w-16'
       )}
     >
       {/* Sidebar Collapse Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="absolute right-[-12px] top-6 w-6 h-6 rounded-full border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none z-30"
+        className="absolute right-[-12px] top-6 w-6 h-6 rounded-full border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none z-30 transition-all duration-200 hover:border-primary/40 hover:text-primary"
         aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
       >
-        {sidebarOpen ? <FaChevronLeft size={10} /> : <FaChevronRight size={10} />}
+        <span style={{ display: 'block', transition: 'transform 0.3s ease', transform: sidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)' }}>
+          <FaChevronLeft size={10} />
+        </span>
       </button>
 
       {/* Header / Logo */}
@@ -149,10 +150,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 h-10 rounded-xl text-sm font-medium transition duration-150 relative group',
+                'flex items-center gap-3 px-3 h-10 rounded-xl text-sm font-medium transition-all duration-200 relative group',
                 isActive
-                  ? 'bg-accent-muted text-primary border border-primary/20'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground border border-transparent hover:translate-x-0.5'
               )}
             >
               <Icon className={cn('text-lg min-w-[20px]', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />

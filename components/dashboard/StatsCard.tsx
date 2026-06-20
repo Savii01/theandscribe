@@ -14,7 +14,7 @@ interface StatsCardProps {
 export function StatsCard({ label, value, icon, description, progress, className, accent }: StatsCardProps) {
   return (
     <div className={cn(
-      'bg-card border border-border rounded-2xl p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-md',
+      'bg-card border border-border rounded-2xl p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5',
       accent && 'border-primary/20 bg-primary/5',
       className
     )}>

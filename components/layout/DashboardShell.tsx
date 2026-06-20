@@ -25,7 +25,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <TopNavbar />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-24 md:pb-8 focus:outline-none">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-24 md:pb-8 focus:outline-none animate-fade-up">
           {children}
         </main>
 

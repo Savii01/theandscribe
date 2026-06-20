@@ -33,47 +33,49 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Welcome */}
-      <div>
+      <div className="animate-fade-up delay-0">
         <h2 className="text-2xl font-heading font-bold tracking-tight text-foreground mb-0.5">Dashboard</h2>
         <p className="text-sm text-muted-foreground">Your transcription workspace</p>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
+        <div className="animate-fade-up delay-75"><StatsCard
           label="Total Transcripts"
           value={totalCount ?? 0}
           icon={<FaFileAlt />}
           description="All completed"
           accent
-        />
-        <StatsCard
+        /></div>
+        <div className="animate-fade-up delay-150"><StatsCard
           label="Today"
           value={todayCount ?? 0}
           icon={<FaCalendarAlt />}
           description="Transcripts today"
           progress={((todayCount ?? 0) / 10) * 100}
-        />
-        <StatsCard
+        /></div>
+        <div className="animate-fade-up delay-200"><StatsCard
           label="Total Minutes"
           value={totalMinutes}
           icon={<FaClock />}
           description="Audio processed"
-        />
-        <StatsCard
+        /></div>
+        <div className="animate-fade-up delay-250"><StatsCard
           label="Daily Quota"
           value={`${Math.round(((todayCount ?? 0) / 10) * 100)}%`}
           icon={<FaBolt />}
           description="Daily limit used"
           progress={((todayCount ?? 0) / 10) * 100}
-        />
+        /></div>
       </div>
 
       {/* Quota Widget */}
-      <QuotaWidget />
+      <div className="animate-fade-up delay-300">
+        <QuotaWidget />
+      </div>
 
       {/* Quick Upload */}
-      <div>
+      <div className="animate-fade-up delay-400">
         <h3 className="text-sm font-heading font-bold tracking-tight text-foreground uppercase tracking-wider mb-3">
           Quick Upload
         </h3>
@@ -81,7 +83,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Transcripts */}
-      <div>
+      <div className="animate-fade-up delay-500">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-heading font-bold tracking-tight text-foreground uppercase tracking-wider">
             Recent Transcripts
