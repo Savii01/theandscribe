@@ -51,6 +51,7 @@ const REPURPOSE_TOOLS = [
   { type: 'linkedin_post', label: 'LinkedIn Post', icon: '💼', desc: 'Professional social update' },
   { type: 'twitter_thread', label: 'Twitter Thread', icon: '🐦', desc: 'Chronological thread format' },
   { type: 'instagram_caption', label: 'Instagram Caption', icon: '📸', desc: 'Engaging, hashtagged caption' },
+  { type: 'tiktok_caption', label: 'TikTok Caption', icon: '🎵', desc: 'Short punchy viral caption' },
   { type: 'facebook_post', label: 'Facebook Post', icon: '👥', desc: 'Conversational community update' },
   { type: 'study_notes', label: 'Study Notes', icon: '🎓', desc: 'Academic study guide layout' },
   { type: 'meeting_notes', label: 'Meeting Notes', icon: '🤝', desc: 'Minutes and action items template' },

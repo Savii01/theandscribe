@@ -15,7 +15,8 @@ import {
   FaSpinner,
   FaSun,
   FaMoon,
-  FaLaptop
+  FaLaptop,
+  FaMicrophone
 } from 'react-icons/fa';
 import { useDailyUsage } from '@/hooks/useDailyUsage';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,8 @@ export default function SettingsPage() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [brandVoice, setBrandVoice] = useState<string>('');
+  const [updatingBrandVoice, setUpdatingBrandVoice] = useState(false);
   const [quotaHistory, setQuotaHistory] = useState<any[]>([]);
   const [quotaHistoryLoading, setQuotaHistoryLoading] = useState(true);
 
@@ -48,13 +51,14 @@ export default function SettingsPage() {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name, role')
+          .select('full_name, role, brand_voice')
           .eq('id', user.id)
           .single();
 
         if (profile) {
           setUserFullName((profile as any).full_name);
           setUserRole((profile as any).role);
+          setBrandVoice((profile as any).brand_voice ?? '');
         }
 
         const { data: history } = await supabase
@@ -100,6 +104,30 @@ export default function SettingsPage() {
     }
   };
 
+  // Handle brand voice update
+  const handleUpdateBrandVoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingBrandVoice(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await (supabase.from('profiles') as any)
+        .update({
+          brand_voice: brandVoice.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      toast.success('Brand voice saved! Future AI generations will use this tone.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save brand voice');
+    } finally {
+      setUpdatingBrandVoice(false);
+    }
+  };
+
   // Sign out handler
   const handleSignOut = async () => {
     setLoggingOut(true);
@@ -132,6 +160,9 @@ export default function SettingsPage() {
           <div className="bg-card border border-border rounded-xl p-2 space-y-1">
             <a href="#profile" className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted text-xs font-semibold text-foreground transition-colors">
               <FaUser size={12} className="text-muted-foreground" /> Profile Settings
+            </a>
+            <a href="#brand-voice" className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted text-xs font-semibold text-foreground transition-colors">
+              <FaMicrophone size={12} className="text-muted-foreground" /> Brand Voice
             </a>
             <a href="#appearance" className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-muted text-xs font-semibold text-foreground transition-colors">
               <FaPalette size={12} className="text-muted-foreground" /> Appearance
@@ -204,6 +235,49 @@ export default function SettingsPage() {
                 </Button>
               </form>
             )}
+          </section>
+
+          {/* Brand Voice card */}
+          <section id="brand-voice" className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4 scroll-mt-6">
+            <h3 className="font-heading font-bold text-sm text-foreground flex items-center gap-2 border-b border-border pb-3">
+              <FaMicrophone className="text-primary" size={13} /> AI Brand Voice
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Describe your preferred writing tone and style. This will be injected into every AI generation — blog posts, social captions, summaries — to make the output sound like <em>you</em>.
+            </p>
+
+            <form onSubmit={handleUpdateBrandVoice} className="space-y-3">
+              <div className="relative">
+                <textarea
+                  value={brandVoice}
+                  onChange={(e) => setBrandVoice(e.target.value.slice(0, 500))}
+                  placeholder={`Examples:\n• "Write in a casual, witty tone — like a smart friend explaining things. Use short sentences and occasional humour."
+• "Professional and authoritative. No slang. Use data-driven language and confident assertions."
+• "Warm, encouraging, and community-focused. Use 'we' language and end with an uplifting call to action."`}
+                  rows={6}
+                  className="w-full px-3 py-3 rounded-xl border border-border bg-muted/20 text-foreground placeholder:text-muted-foreground/60 text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition resize-none leading-relaxed"
+                />
+                <span className={`absolute bottom-2.5 right-3 text-[10px] font-mono ${
+                  brandVoice.length > 450 ? 'text-yellow-500' : 'text-muted-foreground'
+                }`}>
+                  {brandVoice.length}/500
+                </span>
+              </div>
+              {brandVoice.trim() && (
+                <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary">
+                  <span className="font-semibold">Active — </span>
+                  <span className="text-muted-foreground">Your brand voice will shape all future AI-generated content. Cached outputs won&apos;t change — only new generations.</span>
+                </div>
+              )}
+              <Button
+                type="submit"
+                disabled={updatingBrandVoice}
+                className="bg-primary text-black font-semibold text-xs h-9 px-4 rounded-xl cursor-pointer"
+              >
+                {updatingBrandVoice ? <FaSpinner className="animate-spin mr-1.5" size={10} /> : null}
+                Save Brand Voice
+              </Button>
+            </form>
           </section>
 
           {/* Appearance card */}

@@ -34,6 +34,15 @@ export async function POST(req: NextRequest) {
   if (tError || !transcript) return NextResponse.json({ error: 'Transcript not found' }, { status: 404 });
   if (transcript.status !== 'completed') return NextResponse.json({ error: 'Transcript not yet completed' }, { status: 400 });
 
+  // Fetch user brand voice from profile (null-safe — column may not exist on old rows)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('brand_voice')
+    .eq('id', user.id)
+    .single();
+
+  const brandVoice: string | null = (profile as any)?.brand_voice ?? null;
+
   // Check cache first — never regenerate if already exists
   const { data: cached } = await supabase
     .from('ai_outputs')
@@ -57,9 +66,9 @@ export async function POST(req: NextRequest) {
 
   if (vError || !version) return NextResponse.json({ error: 'Transcript text not found' }, { status: 404 });
 
-  // Generate via Groq LLaMA
+  // Generate via Groq LLaMA (with optional brand voice tone injection)
   try {
-    const result = await generateWithGroq(version.content, output_type as AIOutputType);
+    const result = await generateWithGroq(version.content, output_type as AIOutputType, brandVoice);
 
     // Save to cache
     await supabase.from('ai_outputs').insert({

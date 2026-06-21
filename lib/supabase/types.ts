@@ -17,6 +17,7 @@ export interface Database {
           role: 'user' | 'admin';
           theme_preference: 'dark' | 'light';
           onboarded: boolean;
+          brand_voice: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -27,6 +28,7 @@ export interface Database {
           role?: 'user' | 'admin';
           theme_preference?: 'dark' | 'light';
           onboarded?: boolean;
+          brand_voice?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -37,6 +39,7 @@ export interface Database {
           role?: 'user' | 'admin';
           theme_preference?: 'dark' | 'light';
           onboarded?: boolean;
+          brand_voice?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -201,6 +204,7 @@ export type AIOutputType =
   | 'linkedin_post'
   | 'twitter_thread'
   | 'instagram_caption'
+  | 'tiktok_caption'
   | 'facebook_post'
   | 'study_notes'
   | 'meeting_notes'

@@ -828,6 +828,7 @@ CREATE TABLE public.profiles (
   role              TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   theme_preference  TEXT DEFAULT 'dark' CHECK (theme_preference IN ('dark', 'light')),
   onboarded         BOOLEAN DEFAULT FALSE,
+  brand_voice       TEXT DEFAULT NULL CHECK (char_length(brand_voice) <= 500),
   created_at        TIMESTAMPTZ DEFAULT NOW(),
   updated_at        TIMESTAMPTZ DEFAULT NOW()
 );
@@ -880,7 +881,7 @@ CREATE TABLE public.ai_outputs (
                     'key_insights', 'action_items', 'chapters',
                     'blog_post', 'seo_article',
                     'linkedin_post', 'twitter_thread',
-                    'instagram_caption', 'facebook_post',
+                    'instagram_caption', 'tiktok_caption', 'facebook_post',
                     'study_notes', 'meeting_notes', 'research_notes'
                   )),
   content         TEXT NOT NULL,
@@ -1340,4 +1341,13 @@ The root path `/` is now public.
 - **Favicon**: Configured standard `favicon.svg` in `metadata.icons` inside `layout.tsx`.
 - **Theme-Aware Navbar**: Integrated `/Logo/logo_light_theme_navbar.svg` and `/Logo/logo_dark_theme_navbar.svg` using client hydration-safe theme resolution.
 - **Auth branding**: Swapped custom CSS text box wrappers for original SVG logo vectors in `login`, `register`, and `reset-password` layouts.
+
+## 6.4 AI Brand Voice Tone Injection (v2.2)
+- **Profile Schema Addition**: The `profiles` table now includes a `brand_voice` column (nullable, TEXT type, limited to 500 characters). This allows users to save a custom tone of voice description directly from the Settings page.
+- **Prompt Customization**: When calling `/api/ai/generate`, the server queries the user's `brand_voice`. If set, it prepends the instructions to the system prompt generated in `/lib/groq/prompts.ts`, shaping all summaries, articles, and posts.
+
+## 6.5 TikTok Caption Repurposing (v2.2)
+- **Tool Suite Expansion**: Added the `tiktok_caption` output type to `/lib/supabase/types.ts`, `/lib/validators/api.ts`, `/lib/groq/prompts.ts`, and the frontend selection in `TranscriptDetails.tsx`.
+- **Formatting Template**: Standardizes output formatting: scroll-stopping hooks, body sentences, Call To Action, and highly-targeted hashtags.
+
 

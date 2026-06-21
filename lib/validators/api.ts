@@ -32,7 +32,7 @@ export const aiGenerateApiSchema = z.object({
       'key_insights', 'action_items', 'chapters',
       'blog_post', 'seo_article',
       'linkedin_post', 'twitter_thread',
-      'instagram_caption', 'facebook_post',
+      'instagram_caption', 'tiktok_caption', 'facebook_post',
       'study_notes', 'meeting_notes', 'research_notes'
     ];
     return typeof val === 'string' && validTypes.includes(val as AIOutputType);
@@ -40,3 +40,4 @@ export const aiGenerateApiSchema = z.object({
     message: 'Invalid output_type value',
   }),
 });
+

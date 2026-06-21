@@ -10,6 +10,7 @@ export type OutputType =
   | 'linkedin_post'
   | 'twitter_thread'
   | 'instagram_caption'
+  | 'tiktok_caption'
   | 'facebook_post'
   | 'study_notes'
   | 'meeting_notes'
@@ -17,8 +18,18 @@ export type OutputType =
 
 export function buildPrompt(
   outputType: OutputType,
-  transcript: string
+  transcript: string,
+  brandVoice?: string | null
 ): string {
+  // Brand voice injection block — prepended to every prompt when set
+  const voiceBlock = brandVoice?.trim()
+    ? `BRAND VOICE INSTRUCTIONS (apply these to your entire output):
+${brandVoice.trim()}
+---
+
+`
+    : '';
+
   const prompts: Record<OutputType, string> = {
 
     summary_short: `
@@ -229,6 +240,25 @@ TRANSCRIPT:
 ${transcript}
 `.trim(),
 
+    tiktok_caption: `
+You are a TikTok content creator who specialises in viral short-form captions.
+Read the transcript below and write a punchy TikTok caption.
+
+Requirements:
+- Hook: first line must stop the scroll — bold, surprising, or relatable (max 80 chars)
+- Body: 2-3 very short lines expanding on the hook
+- CTA: one line inviting action ("Comment below", "Save this", "Follow for more")
+- Hashtags: 3-5 highly relevant hashtags (mix trending and niche)
+- Total length: under 150 words
+- Tone: casual, energetic, authentic — write like a real person, not a brand
+- No corporate speak, no filler words
+
+Output only the caption. No preamble.
+
+TRANSCRIPT:
+${transcript}
+`.trim(),
+
     facebook_post: `
 You are a Facebook content writer.
 Read the transcript below and write an engaging Facebook post.
@@ -350,7 +380,7 @@ ${transcript}
 
   };
 
-  return prompts[outputType];
+  return voiceBlock + prompts[outputType];
 }
 
 export const OUTPUT_TYPE_LABELS: Record<OutputType, string> = {
@@ -365,6 +395,7 @@ export const OUTPUT_TYPE_LABELS: Record<OutputType, string> = {
   linkedin_post:      'LinkedIn Post',
   twitter_thread:     'Twitter/X Thread',
   instagram_caption:  'Instagram Caption',
+  tiktok_caption:     'TikTok Caption',
   facebook_post:      'Facebook Post',
   study_notes:        'Study Notes',
   meeting_notes:      'Meeting Notes',

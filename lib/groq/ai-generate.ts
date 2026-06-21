@@ -13,13 +13,15 @@ export type AIGenerateResult = {
 
 /**
  * Generate AI content from a transcript using Groq LLaMA 3.3 70b.
+ * Optionally inject a brand voice description to shape output tone/style.
  * Returns the generated text content.
  */
 export async function generateWithGroq(
   transcriptText: string,
-  outputType: OutputType
+  outputType: OutputType,
+  brandVoice?: string | null
 ): Promise<AIGenerateResult> {
-  const prompt = buildPrompt(outputType, transcriptText);
+  const prompt = buildPrompt(outputType, transcriptText, brandVoice);
 
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
