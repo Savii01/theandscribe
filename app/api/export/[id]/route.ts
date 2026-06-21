@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createUserClient, createServiceClient } from '@/lib/supabase/server';
 import { generateTxt } from '@/lib/exporters/txt';
 import { generateSrt } from '@/lib/exporters/srt';
 import { generateVtt } from '@/lib/exporters/vtt';
@@ -13,11 +13,15 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createServiceClient();
   const { id } = await params;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Auth: cookie-aware client to resolve session
+  const authClient = await createUserClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // DB: service client for all data fetching
+  const supabase = await createServiceClient();
 
   const format = (req.nextUrl.searchParams.get('format') ?? 'txt') as ExportFormat;
   const includeTimestamps = req.nextUrl.searchParams.get('timestamps') !== 'false';

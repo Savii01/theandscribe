@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createUserClient, createServiceClient } from '@/lib/supabase/server';
 import { transcribeAudio } from '@/lib/transcription';
 import { extractAudio } from '@/lib/extractors';
 import { transcribeUrlApiSchema } from '@/lib/validators/api';
@@ -8,12 +8,15 @@ import { quotaPreflightCheck, incrementProviderUsage } from '@/lib/transcription
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServiceClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  // Auth: cookie-aware client for session resolution
+  const authClient = await createUserClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // DB: service client
+  const supabase = await createServiceClient();
 
   let body: unknown;
   try { body = await req.json(); } catch {

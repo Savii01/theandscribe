@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { FaSearch, FaTimes, FaRegCopy, FaCheck } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { TranscriptSegment } from '@/lib/supabase/types';
+import { Button } from '@/components/ui/button';
 
 interface TranscriptViewerProps {
   content: string;
@@ -20,12 +21,28 @@ function formatTime(seconds: number): string {
 export function TranscriptViewer({ content, segments }: TranscriptViewerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   const handleCopyText = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     toast.success('Copied segment text');
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleCopyAll = () => {
+    let textToCopy = content;
+    if (!textToCopy && segments && segments.length > 0) {
+      textToCopy = segments.map((seg) => seg.text).join(' ');
+    }
+    if (!textToCopy) {
+      toast.error('No content to copy');
+      return;
+    }
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedAll(true);
+    toast.success('Copied entire transcript');
+    setTimeout(() => setCopiedAll(false), 2000);
   };
 
   const hasSegments = segments && segments.length > 0;
@@ -66,26 +83,37 @@ export function TranscriptViewer({ content, segments }: TranscriptViewerProps) {
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-          <FaSearch size={12} />
+      {/* Search & Actions Bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <FaSearch size={12} />
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search within transcript..."
+            className="w-full h-10 pl-9 pr-8 rounded-xl border border-border bg-muted/20 text-foreground placeholder:text-muted-foreground text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition cursor-pointer"
+            >
+              <FaTimes size={10} />
+            </button>
+          )}
         </div>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search within transcript..."
-          className="w-full h-10 pl-9 pr-8 rounded-xl border border-border bg-muted/20 text-foreground placeholder:text-muted-foreground text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition cursor-pointer"
-          >
-            <FaTimes size={10} />
-          </button>
-        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleCopyAll}
+          className="flex items-center gap-1.5 h-10 px-4 rounded-xl text-xs cursor-pointer font-semibold shrink-0"
+        >
+          {copiedAll ? <FaCheck className="text-green-500" size={10} /> : <FaRegCopy size={10} />}
+          {copiedAll ? 'Copied!' : 'Copy All'}
+        </Button>
       </div>
 
       {/* Segments list or plain text */}

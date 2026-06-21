@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createUserClient, createServiceClient } from '@/lib/supabase/server';
 import { transcribeAudio } from '@/lib/transcription';
 import { transcribeApiSchema } from '@/lib/validators/api';
 import { quotaPreflightCheck, incrementProviderUsage } from '@/lib/transcription/quota';
@@ -7,13 +7,15 @@ import { quotaPreflightCheck, incrementProviderUsage } from '@/lib/transcription
 export const maxDuration = 60; // seconds (Vercel Pro supports 60s)
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServiceClient();
-
-  // Auth check
-  const { data: { user } } = await supabase.auth.getUser();
+  // Auth: use cookie-aware client to resolve the current user session
+  const authClient = await createUserClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // DB: use service client (bypasses RLS — ownership checks done manually)
+  const supabase = await createServiceClient();
 
   // Parse + validate body
   let body: unknown;

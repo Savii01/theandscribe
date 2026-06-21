@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createUserClient, createServiceClient } from '@/lib/supabase/server';
 import { generateWithGroq } from '@/lib/groq/ai-generate';
 import { aiGenerateApiSchema } from '@/lib/validators/api';
 import { AIOutputType } from '@/lib/supabase/types';
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServiceClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const authClient = await createUserClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const supabase = await createServiceClient();
 
   let body: unknown;
   try { body = await req.json(); } catch {
